@@ -39,3 +39,14 @@ async def login(
     authorize: AuthJWT = Depends(),
 ):
     return await log_in_to_account(user, session, authorize, repository)
+
+
+@router.delete(
+    "/logout",
+    summary="Log out of account.",
+    status_code=status.HTTP_200_OK,
+    response_model=dict[str, str],
+)
+async def logout(authorize: AuthJWT):
+    await authorize.unset_jwt_cookies()
+    return {"msg": "Successfully logout"}
