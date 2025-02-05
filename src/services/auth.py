@@ -22,20 +22,25 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-async def check_current_user(session: AsyncSession, authorize: AuthJWT):
+async def check_current_user(session: AsyncSession, authorize: AuthJWT, repository: BaseRepository) -> User:
     try:
         await authorize.jwt_required()
-        current_user = await authorize.get_jwt_subject()
-        return current_user
+        filters = {"email": await authorize.get_jwt_subject()}
     except Exception:
         return JSONResponse({"msg": "Invalid token."}, status_code=status.HTTP_401_UNAUTHORIZED)
+
+    user = await repository.get_single(User, session, **filters)
+    if not user:
+        return error_response("Access Denied.", status.HTTP_403_FORBIDDEN)
+
+    return user
 
 
 async def create_user_profile(
     user: UserCreate,
     session: AsyncSession,
     repository: BaseRepository,
-):
+) -> User:
     data = user.model_dump()
     data["password"] = get_password_hash(data["password"])
 
@@ -51,7 +56,7 @@ async def log_in_to_account(
     session: AsyncSession,
     authorize: AuthJWT,
     repository: BaseRepository,
-):
+) -> dict[str, str]:
     data = user.model_dump()
     del data["password"]
     instance = await repository.get_single(User, session, **data)
