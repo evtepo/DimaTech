@@ -8,6 +8,7 @@ class PaymentMixin(BaseModel):
     amount: float
     user_id: UUID
     account_id: UUID
+    signature: str
 
 
 class PaymentInfo(PaymentMixin):
