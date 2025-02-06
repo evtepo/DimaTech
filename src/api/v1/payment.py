@@ -10,7 +10,7 @@ from services.payment import create_new_payment, get_user_payments
 from utils.dependency import db_dependency, repository_dependency
 
 
-router = APIRouter(prefix="/api/v1/payment")
+router = APIRouter(prefix="/api/v1/payment", tags=["Payment"])
 
 
 @router.get(
