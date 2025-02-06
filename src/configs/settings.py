@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     token_secret_key: str = Field("nie", alias="TOKEN_SECRET_KEY")
     access_token_expire_in_seconds: int = 60 * 60
 
+    signature_secret_key: str = Field("nie", alias="SIGNATURE_SECRET_KEY")
+
     @property
     def database_dsn(self) -> str:
         return f"postgresql+asyncpg://{self.pg_user}:{self.pg_password}@{self.pg_host}:{self.pg_port}/{self.pg_name}"
