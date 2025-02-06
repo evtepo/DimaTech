@@ -1,5 +1,4 @@
 from async_fastapi_jwt_auth.auth_jwt import AuthJWT
-from fastapi.responses import JSONResponse
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
@@ -22,12 +21,12 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-async def check_current_user(session: AsyncSession, authorize: AuthJWT, repository: BaseRepository) -> User:
+async def check_current_user(session: AsyncSession, authorize: AuthJWT, repository: BaseRepository) -> User | None:
     try:
         await authorize.jwt_required()
         filters = {"email": await authorize.get_jwt_subject()}
     except Exception:
-        return JSONResponse({"msg": "Invalid token."}, status_code=status.HTTP_401_UNAUTHORIZED)
+        return error_response("Invalid token.", status_code=status.HTTP_401_UNAUTHORIZED)
 
     user = await repository.get_single(User, session, **filters)
     if not user:
