@@ -4,6 +4,7 @@ from async_fastapi_jwt_auth.auth_jwt import AuthJWT
 from fastapi import APIRouter, Depends, Query
 from starlette import status
 
+from models.user import User
 from schemas.payment import PaymentCreate, PaymentInfo
 from services.auth import check_current_user
 from services.payment import create_new_payment, get_user_payments
@@ -17,7 +18,7 @@ router = APIRouter(prefix="/api/v1/payment", tags=["Payment"])
     "/",
     summary="Get payments info.",
     status_code=status.HTTP_200_OK,
-    response_model=dict[str, dict[str, int] | list[PaymentInfo | None]],
+    response_model=dict[str, dict[str, int | None] | list[PaymentInfo | None]],
 )
 async def get_payments(
     session: db_dependency,
@@ -28,6 +29,9 @@ async def get_payments(
     size: int = Query(ge=10, le=50, default=10),
 ):
     user = await check_current_user(session, authorize, repository)
+    if not isinstance(user, User):
+        return user
+
     filters = {"user_id": user_id} if user.is_stuff and user_id else {"user_id": user.id}
     
     return await get_user_payments(page, size, session, repository, **filters)
