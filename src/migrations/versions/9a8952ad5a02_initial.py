@@ -6,9 +6,12 @@ Create Date: 2025-02-02 20:12:17.638752
 
 """
 from typing import Sequence, Union
+from uuid import uuid4
 
 from alembic import op
 import sqlalchemy as sa
+
+from services.auth import get_password_hash
 
 
 # revision identifiers, used by Alembic.
@@ -47,6 +50,18 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.execute(
+        f"""
+        INSERT INTO public.user (id, first_name, last_name, email, password, is_stuff)
+        VALUES ('{uuid4()}', 'Ben', 'Doe', 'ben@gmail.com', '{get_password_hash("123")}', 'f')
+        """
+    )
+    op.execute(
+        f"""
+        INSERT INTO public.user (id, first_name, last_name, email, password, is_stuff)
+        VALUES ('{uuid4()}', 'John', 'Smith', 'john@gmail.com', '{get_password_hash("123")}', 't')
+        """
+    )    
     # ### end Alembic commands ###
 
 
