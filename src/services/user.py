@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.user import User
 from repository.repository import BaseRepository
-from schemas.user import UserCreate, UserDelete, UserUpdate
+from schemas.user import UserDelete, UserUpdate
 from utils.error_handling import error_response
 
 
