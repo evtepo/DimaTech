@@ -74,7 +74,12 @@ async def update_profile(
     repository: repository_dependency,
     authorize: AuthJWT = Depends(),
 ):
-    await check_current_user(session, authorize, repository)
+    current_user = await check_current_user(session, authorize, repository)
+    if not isinstance(current_user, User):
+        return current_user
+
+    if not current_user.is_stuff:
+        return error_response("Access Denied", status.HTTP_403_FORBIDDEN)
 
     return await update_user_profile(user_data, session, repository)
 
@@ -91,6 +96,11 @@ async def delete_profile(
     repository: repository_dependency,
     authorize: AuthJWT = Depends(),
 ):
-    await check_current_user(session, authorize, repository)
+    current_user = await check_current_user(session, authorize, repository)
+    if not isinstance(current_user, User):
+        return current_user
+
+    if not current_user.is_stuff:
+        return error_response("Access Denied", status.HTTP_403_FORBIDDEN)
 
     return await delete_user_profile(user, session, repository)
