@@ -31,22 +31,22 @@ async def get_user_payments(
 
 
 async def create_new_payment(data: PaymentCreate, session: AsyncSession, repository: BaseRepository) -> Payment:
-    data = data.model_dump()
     check_transaction = await repository.get_single(Payment, session, transaction_id=data.transaction_id)
-
-    del data["signature"]
 
     if check_transaction:
         return error_response("The operation has already been completed.")
 
-    with session.begin():
-        account = await repository.get_single(Account, session, account_id=data.account_id)
+    account = await repository.get_single(Account, session, id=data.account_id)
+    if not account:
+        account_data = {"id": data.account_id, "user_id": data.user_id, "balance": 0.0}
+        account = await repository.create(account_data, Account, session)
+        print(account)
         if not account:
-            account_data = {"id": data.account_id, "user_id": data.user_id}
-            account = await repository.create(account_data, Account, session)
-            if not account:
-                return error_response("Something went wrong.")
+            return error_response("Something went wrong.")
 
-        account.balance += data.amount
+    account.balance = float(account.balance) + data.amount
 
-        return await repository.create(data, Payment, session)
+    data = data.model_dump()
+    del data["signature"]
+
+    return await repository.create(data, Payment, session)
