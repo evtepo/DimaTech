@@ -38,7 +38,7 @@ async def get_payments(
 
 
 @router.post(
-    "/",
+    "/webhook",
     summary="Create payment.",
     status_code=status.HTTP_201_CREATED,
     response_model=PaymentInfo,
