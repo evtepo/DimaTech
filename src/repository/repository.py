@@ -71,27 +71,32 @@ class SqlAlchemyRepository(BaseRepository):
 
         return data.scalar_one_or_none()
 
-    async def create(self, data: dict, model: Model, session: AsyncSession) -> Model:
+    async def create(self, data: dict, model: Model, session: AsyncSession) -> Model | None:
         instance = None
         try:
             instance = model(**data)
             session.add(instance)
             await session.commit()
             await session.refresh(instance)
+            return instance
         except Exception:
             return None
 
-        return instance
 
     async def update(self, data: dict, model: Model, session: AsyncSession, **filters) -> Model | None:
+        select_query = select(model).filter_by(**filters)
+        instance = await session.execute(select_query)
+        instance = instance.scalar_one_or_none()
+        if not instance:
+            return None
+
         update_query = update(model).values(**data).filter_by(**filters)
         await session.execute(update_query)
         await session.commit()
 
-        select_query = select(model).filter_by(**filters)
-        instance = await session.execute(select_query)
+        await session.refresh(instance)
 
-        return instance.scalar_one_or_none()
+        return instance
 
     async def delete(self, model: Model, session: AsyncSession, **filters) -> dict[str, str] | None:
         select_query = select(model).filter_by(**filters)
