@@ -14,7 +14,8 @@ class UserCreate(UserMixin):
     password: str
 
 
-class UserUpdate(UserMixin): ...
+class UserUpdate(UserMixin):
+    id: UUID
 
 
 class UserInfo(BaseModel):
