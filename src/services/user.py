@@ -9,7 +9,11 @@ from utils.error_handling import error_response
 async def get_user_info(session: AsyncSession, repository: BaseRepository, email: str | None) -> User:
     filters = {"email": email}
 
-    return await repository.get_single(User, session, **filters)
+    res = await repository.get_single(User, session, **filters)
+    if not res:
+        return error_response("Invalid email address.")
+
+    return res
 
 
 async def get_list_users(
@@ -35,26 +39,19 @@ async def get_list_users(
     return result
 
 
-async def create_user_profile(data: UserCreate, session: AsyncSession, repository: BaseRepository) -> User:
-    user = await repository.create(data, User, session)
-    if not user:
-        return error_response("Invalid user data.")
-
-    return user
-
-
 async def update_user_profile(
     data: UserUpdate,
-    email: str,
     session: AsyncSession,
     repository: BaseRepository,
-) -> User:
-    if not email:
-        return error_response("Email address required.")
+) -> User | None:
+    filters = {"id": str(data.id)}
+    data = data.model_dump()
 
-    filters = {"email": email}
+    res = await repository.update(data, User, session, **filters)
+    if not res:
+        return error_response("Invalid user ID.")
 
-    return await repository.update(data, User, session, **filters)
+    return res
 
 
 async def delete_user_profile(data: UserDelete, session: AsyncSession, repository: BaseRepository) -> dict[str, str]:
