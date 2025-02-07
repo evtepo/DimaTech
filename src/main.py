@@ -8,7 +8,10 @@ from api.v1.payment import router as payment_router
 from configs.settings import settings
 
 
-app = FastAPI()
+app = FastAPI(
+    title=settings.service_name,
+    version="1.0"
+)
 
 app.include_router(account_router)
 app.include_router(auth_router)
@@ -20,5 +23,4 @@ if __name__ == "__main__":
         app="main:app",
         host=settings.service_host,
         port=settings.service_port,
-        reload=True,
     )
