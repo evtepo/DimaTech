@@ -1,5 +1,8 @@
+import hashlib
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from configs.settings import settings
 from models.wallet import Account, Payment
 from repository.repository import BaseRepository
 from schemas.payment import PaymentCreate
@@ -31,6 +34,11 @@ async def get_user_payments(
 
 
 async def create_new_payment(data: PaymentCreate, session: AsyncSession, repository: BaseRepository) -> Payment:
+    data_string = f"{data.account_id}{data.amount}{data.transaction_id}{data.user_id}{settings.signature_secret_key}"
+    signature = hashlib.sha256(data_string.encode()).hexdigest()
+    if signature != data.signature:
+        return error_response("Invalid signature.")
+
     check_transaction = await repository.get_single(Payment, session, transaction_id=data.transaction_id)
 
     if check_transaction:
@@ -40,7 +48,6 @@ async def create_new_payment(data: PaymentCreate, session: AsyncSession, reposit
     if not account:
         account_data = {"id": data.account_id, "user_id": data.user_id, "balance": 0.0}
         account = await repository.create(account_data, Account, session)
-        print(account)
         if not account:
             return error_response("Something went wrong.")
 
