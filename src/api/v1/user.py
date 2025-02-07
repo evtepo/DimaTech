@@ -31,6 +31,9 @@ async def get_user(
     email: str | None = None,
 ):
     current_user = await check_current_user(session, authorize, repository)
+    if not isinstance(current_user, User):
+        return current_user
+
     if current_user.is_stuff and email and current_user.email != email:
         user_info = await get_user_info(session, repository, email)
 
