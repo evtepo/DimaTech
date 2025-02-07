@@ -1,0 +1,21 @@
+version: '3.5'
+services:
+  wallet_service:
+    build: ./src
+    container_name: wallet_service
+    depends_on:
+      - wallet_postgres
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./.env.example
+
+  wallet_postgres:
+    image: postgres:latest
+    container_name: wallet_postgres
+    expose:
+      - "5432"
+    env_file:
+      - ./.env.example
+    volumes:
+      - /postgresql/wallet_data:/var/lib/postgresql/data
